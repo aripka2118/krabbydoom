@@ -37,6 +37,7 @@ function menuItems() {
       { label: 'BUBBLE BASS ARENA', go: () => startGame('bass') },
       { label: 'FRED ARENA', go: () => startGame('fred') },
       { label: 'DOOR & KEY TEST', go: () => startGame('doors') },
+      { label: 'HOUSE TEST', go: () => startGame('house') },
       { label: 'BACK', go: () => setScreen('menu') },
     ];
     case 'paused': return [
@@ -56,7 +57,7 @@ function menuItems() {
   }
   return [];
 }
-const menuTop = () => ({ menu: 120, worlds: 90, levels: 70, extras: 86, paused: 110, win: 140 }[state] || 150);
+const menuTop = () => ({ menu: 120, worlds: 90, levels: 70, extras: 78, paused: 110, win: 140 }[state] || 150);
 function menuRect(i) { return { x: (W - BTN_W) / 2, y: menuTop() + i * (BTN_H + BTN_GAP), w: BTN_W, h: BTN_H }; }
 
 // Which button is under a mouse event (canvas is letterboxed by object-fit: contain)
@@ -96,11 +97,11 @@ function drawMenu() {
     if (k && LEVELS[k].problems.length) txt('Map problem: ' + LEVELS[k].problems[0], W / 2, 240, 10, '#ff7a5a');
     else if (k) txt(LEVELS[k].intro, W / 2, 240, 11, '#bfe6ff');
   } else if (state === 'extras') {
-    txt('EXTRAS', W / 2, 46, 28, '#ffd84a');
-    txt('Test arenas for each fish and mechanic', W / 2, 68, 11, '#e8f6ff');
+    txt('EXTRAS', W / 2, 40, 28, '#ffd84a');
+    txt('Test arenas for each fish and mechanic', W / 2, 62, 11, '#e8f6ff');
     const notes = ['Anchovy: fast runner, 1 patty', 'Bubble Bass: slow, hits hard, 5 patties', 'Fred: throws his leg, 3 patties',
-      'Red, yellow and blue keys open their doors'];
-    if (menuSel < notes.length) txt(notes[menuSel], W / 2, 236, 11, '#bfe6ff');
+      'Red, yellow and blue keys open their doors', "SpongeBob's house: walls, furniture and Gary"];
+    if (menuSel < notes.length) txt(notes[menuSel], W / 2, 250, 11, '#bfe6ff');
   } else if (state === 'paused') {
     txt('PAUSED', W / 2, 70, 30, '#ffd84a');
     txt(lvlTitle(currentLevel) + '   -   Fish fed: ' + fedCount + ' / ' + fish.length, W / 2, 92, 11, '#e8f6ff');

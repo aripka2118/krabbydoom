@@ -5,16 +5,29 @@
 // HOW TO MAKE A LEVEL
 //   Draw the map as rows of letters. Every row must be the same length.
 //
-//   Walls:  #  coral      P  pineapple      W  wood      K  rock
-//   Fish:   n  anchovy    b  Bubble Bass    d  Fred
+//   UPPER and lower case are different things: N is a porthole but n is an anchovy!
+//
+//   Walls:  #  coral          P  pineapple        W  wood            K  rock
+//   House:  L  blue planks    T  kitchen tiles    O  bedroom weave   G  bathroom wallpaper
+//           B  bookshelf      C  grey stone       N  porthole window D  front door (decoration)
+//   Doors:  R  red            Y  yellow           U  blue            (opened by their key)
+//   Keys:   r  red            y  yellow           u  blue
+//   Fish:   n  anchovy        b  Bubble Bass      d  Fred
+//   Furniture (solid, blocks you, fish and patties):
+//           c  armchair       t  TV               z  bed             i  fridge
+//           e  table          l  barrel           x  treasure chest  w  bathtub
+//           o  toilet         g  Gary (not solid, meows when you walk up)
 //   Stuff:  S  start (exactly one)    a  patty crate    h  sea water    k  kelp
 //           .  open floor
 //
-//   facing: which way SpongeBob looks at the start: 'east', 'west', 'north' or 'south'
-//   intro:  the line shown when the level starts (optional)
+//   facing:  which way SpongeBob looks at the start: 'east', 'west', 'north' or 'south'
+//   floor:   'sand' (outside), 'wood', 'pink' (bathroom tiles) or 'stone'
+//   ceiling: 'sky' (outside), 'net' (pineapple ceiling), 'plaster' or 'wood'
+//   intro:   the line shown when the level starts (optional)
 //
 //   Mistakes (uneven rows, no S, a fish walled off...) show up in red on the level select.
-//   Levels 1, 2, 4 and 5 are placeholders: replace them with your own.
+//   Extras > House Test shows every house wall and piece of furniture.
+//   The full list is also in LEVEL_GUIDE.md.
 
 addWorld({
   name: 'Conch St',
@@ -23,6 +36,8 @@ addWorld({
     {
       name: '124 Conch St',
       facing: 'east',
+      floor: 'sand',
+      ceiling: 'sky',
       intro: 'Lets head home after a long day of work!',
       map: [
         "#########################",
@@ -50,6 +65,8 @@ addWorld({
     {
       name: 'Goo Lagoon',
       facing: 'east',
+      floor: 'sand',
+      ceiling: 'sky',
       intro: 'Bubble Bass is here. He needs 5 patties!',
       map: [
         '####################',
@@ -71,6 +88,8 @@ addWorld({
     {
       name: 'Bikini Bottom',
       facing: 'east',
+      floor: 'sand',
+      ceiling: 'sky',
       intro: 'Feed every hungry fish in Bikini Bottom!',
       map: [
         '################################',
@@ -103,6 +122,8 @@ addWorld({
     {
       name: 'Rock Bottom',
       facing: 'east',
+      floor: 'sand',
+      ceiling: 'sky',
       intro: 'Watch out for flying legs!',
       map: [
         'KKKKKKKKKKKKKKKKKKKK',
@@ -122,6 +143,8 @@ addWorld({
     {
       name: 'The Krusty Krab',
       facing: 'east',
+      floor: 'sand',
+      ceiling: 'sky',
       intro: 'Dinner rush! Everyone is hungry!',
       map: [
         '####################',

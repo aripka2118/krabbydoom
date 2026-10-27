@@ -21,11 +21,12 @@ function wallCol(x, pd, side, tex, rdx, rdy, o) {
 
 function renderWorld() {
   const dX = Math.cos(P.a), dY = Math.sin(P.a), pX = -dY * PL, pY = dX * PL;
-  const sand = TEX.sand.px, sky = TEX.sky.px;
+  const lvl = LEVELS[currentLevel], ceil = CEILINGS[lvl.ceiling] || TEX.sky;
+  const sand = (FLOORS[lvl.floor] || TEX.sand).px, sky = ceil.px;
 
   // floor + ceiling
   const rx0 = dX - pX, ry0 = dY - pY, rx1 = dX + pX, ry1 = dY + pY;
-  const cOff = time * 6;
+  const cOff = ceil.scroll ? time * 6 : 0;
   for (let y = HZ; y < H; y++) {
     const rowD = HZ / (y - HZ + .5);
     const sx = rowD * (rx1 - rx0) / W, sy = rowD * (ry1 - ry0) / W;
@@ -84,6 +85,7 @@ function renderWorld() {
     else list.push({ x: it.x, y: it.y, z: .28 + Math.sin(time * 3) * .04, h: .32, tex: TEX.water });
   }
   for (const d of decor) list.push({ x: d.x, y: d.y, z: .45, h: .9, tex: TEX.kelp });
+  for (const p of props) list.push({ x: p.x, y: p.y, z: p.t.h / 2, h: p.t.h, tex: p.t.tex });
   for (const s of shots) {
     if (s.kind === 'patty') list.push({ x: s.x, y: s.y, z: s.z + Math.sin(s.life * 20) * .02, h: .18, tex: TEX.patty });
     else if (s.kind === 'leg') list.push({ x: s.x, y: s.y, z: s.z, h: .42, tex: TEX.leg[Math.floor(s.spin) & 7] });

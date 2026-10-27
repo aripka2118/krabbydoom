@@ -77,6 +77,8 @@ function drawMap() {
     const c = col[MAP[y][x]];
     if (c) { ctx.fillStyle = c; ctx.fillRect(ox + x * cs, oy + y * cs, cs, cs); }
   }
+  ctx.fillStyle = '#c8b090';
+  for (const p of props) if (p.t.solid) ctx.fillRect(ox + (p.x - .3) * cs, oy + (p.y - .3) * cs, cs * .6, cs * .6);
   for (const it of items) if (!it.taken) { ctx.fillStyle = it.kind === 'key' ? KEYS[it.key].col : it.kind === 'ammo' ? '#ffd23a' : '#7fd4f5'; ctx.fillRect(ox + it.x * cs - 1, oy + it.y * cs - 1, 2, 2); }
   for (const f of fish) { ctx.fillStyle = f.fed ? '#5f5' : '#f44'; ctx.fillRect(ox + f.x * cs - 1.5, oy + f.y * cs - 1.5, 3, 3); }
   ctx.strokeStyle = '#fff'; ctx.lineWidth = 1;

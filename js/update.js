@@ -117,6 +117,9 @@ function update(dt) {
   }
   opening = opening.filter(d => !d.done);
 
+  meowT -= dt;
+  for (const p of props) if (p.t.meow && meowT <= 0 && Math.hypot(p.x - P.x, p.y - P.y) < .8) { say('Gary: "Meow."', 1.5); SFX.meow(); meowT = 4; }
+
   // never leave the player stranded without patties
   if (P.ammo === 0 && !shots.some(s => s.kind === 'patty') && !items.some(i => i.kind === 'ammo' && !i.taken) && fedCount < fish.length) {
     items.push({ kind: 'ammo', x: start.x, y: start.y });
@@ -190,7 +193,7 @@ function update(dt) {
     if (s.kind === 'leg') { updateLeg(s, dt); continue; }
     s.life -= dt;
     const nx = s.x + s.dx * dt, ny = s.y + s.dy * dt;
-    if (solid(nx, ny)) {
+    if (solid(nx, ny) || propBlocked(nx, ny, 0)) {
       s.life = 0;
       fx.push({ tex: s.kind === 'patty' ? TEX.splat : TEX.bubble, x: s.x, y: s.y, z: s.z, h: s.kind === 'patty' ? .25 : .3, vz: 0, life: .3 });
       if (s.kind === 'patty') SFX.splat();
