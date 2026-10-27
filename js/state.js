@@ -4,7 +4,7 @@
 // ---------------------------------------------------------------------------
 const P = { x: 1.5, y: 1.5, a: 0, hp: 100, ammo: 20, cool: 0, throwT: 0, bob: 0, hurt: 0, grin: 0, glow: 0 };
 let fish = [], items = [], decor = [], shots = [], fx = [];
-let fedCount = 0, state = 'title', time = 0, showMap = false, start = { x: 1.5, y: 1.5 };
+let fedCount = 0, state = 'menu', time = 0, showMap = false, start = { x: 1.5, y: 1.5 };
 let message = '', msgT = 0, flowT = 0, emptyT = 0;
 const FED_LINES = ['Mmm, Krabby Patty!', 'Order up!', 'One happy fish!', 'Tastes like freedom!', 'Barnacles, that hit the spot!'];
 function say(s, t = 2.2) { message = s; msgT = t; }
@@ -24,7 +24,7 @@ function reset() {
     else if (ch === 'h') items.push({ kind: 'water', x: cx, y: cy });
     else if (ch === 'k') decor.push({ x: cx, y: cy });
   }
-  Object.assign(P, { a: Math.PI / 2, hp: 100, ammo: 20, cool: 0, throwT: 0, bob: 0, hurt: 0, grin: 0, glow: 0 });
+  Object.assign(P, { a: LEVELS[currentLevel].angle, hp: 100, ammo: 20, cool: 0, throwT: 0, bob: 0, hurt: 0, grin: 0, glow: 0 });
   message = ''; msgT = 0;
   buildFlow();
 }

@@ -2,29 +2,15 @@
 // ---------------------------------------------------------------------------
 // Map
 // ---------------------------------------------------------------------------
-// # coral  P pineapple  W wood  K rock | S start  n anchovy  b Bubble Bass  d Fred
-// (f guppy  s puffer  g grouper: shelved)
-// a patty crate  h sea water (moisture)  k kelp
-const MAP = [
-  '########################',
-  '#S....P#.......#.......#',
-  '#......#.......#.......#',
-  '#..a...W.......W...b...#',
-  '#......W...k...W...a...#',
-  '#..k...#.......#.......#',
-  '###.####PPPP.PPPP###.###',
-  '#......................#',
-  '#..d.....h.............#',
-  '#.........k.........b..#',
-  '#####.#####..#####.#####',
-  '#.......K......K.......#',
-  '#..d....K......K.......#',
-  '#.......W..a.b.W.......#',
-  '#...h..................#',
-  '#.......K..k...K.......#',
-  '########################',
-];
-const MW = MAP[0].length, MH = MAP.length;
+// Level layouts live in levels.js; loadLevel swaps the active one in
+let MAP, MW, MH, flow, currentLevel;
+function loadLevel(key) {
+  currentLevel = key;
+  MAP = LEVELS[key].map;
+  MW = MAP[0].length; MH = MAP.length;
+  flow = new Int16Array(MW * MH);
+}
+loadLevel('main');
 const cell = (x, y) => (x < 0 || y < 0 || x >= MW || y >= MH) ? '#' : MAP[y][x];
 const solid = (x, y) => !!WALLS[cell(Math.floor(x), Math.floor(y))];
 const blocked = (x, y, r) => solid(x - r, y - r) || solid(x + r, y - r) || solid(x - r, y + r) || solid(x + r, y + r);
@@ -39,7 +25,6 @@ function los(a, b) {
 }
 
 // Flow field toward the player so fish can path around walls
-const flow = new Int16Array(MW * MH);
 function buildFlow() {
   flow.fill(-1);
   const s = Math.floor(P.y) * MW + Math.floor(P.x), q = [s];

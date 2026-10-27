@@ -109,28 +109,8 @@ function drawHUD() {
   if (!locked()) txt('Click to capture mouse  (or use arrows / Q E to turn)', W / 2, H - 42, 9, 'rgba(255,255,255,.8)');
 }
 
-function overlay(title, col, lines, prompt) {
-  ctx.fillStyle = 'rgba(0,18,36,.68)'; ctx.fillRect(0, 0, W, H);
-  txt(title, W / 2, 62, 34, col);
-  lines.forEach((l, i) => txt(l, W / 2, 96 + i * 17, 11, '#e8f6ff'));
-  if (Math.floor(time * 2) % 2 === 0) txt(prompt, W / 2, 232, 15, '#ffd84a');
-}
-
 function render() {
   renderWorld();
-  if (state === 'play') { drawHUD(); return; }
-  if (state === 'title') {
-    overlay('KRABBY DOOM', '#ffd84a', [
-      'The fish of Bikini Bottom are HUNGRY. Feed them all!',
-      'Hungry fish nibble you and dry you out. Patties make them happy.',
-      'WASD / Arrows - move     Mouse or Q / E - turn     Shift - run',
-      'Click / Space - throw Krabby Patty     M - map',
-      'Bubble Bass: slow, hits hard, needs 5.   Fred: throws his leg! Needs 3.',
-    ], 'CLICK TO START');
-    ctx.drawImage(TEX.patty.cv, W / 2 - 24, 186, 48, 48);
-  } else if (state === 'win') {
-    overlay('ORDER UP!', '#7dff8a', ['Every fish in Bikini Bottom is full and happy.', 'Moisture left: ' + Math.ceil(P.hp) + '%     Patties left: ' + P.ammo], 'CLICK OR PRESS R TO PLAY AGAIN');
-  } else {
-    overlay('YOU DRIED OUT!', '#ff7a5a', ['Too many nibbles... you need more water!', 'Fish fed: ' + fedCount + ' / ' + fish.length], 'CLICK OR PRESS R TO TRY AGAIN');
-  }
+  if (state === 'play' || state === 'paused') drawHUD();
+  if (state !== 'play') drawMenu();
 }

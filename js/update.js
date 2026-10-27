@@ -205,6 +205,6 @@ function update(dt) {
   for (const e of fx) { e.life -= dt; e.z += e.vz * dt; }
   fx = fx.filter(e => e.life > 0);
 
-  if (P.hp <= 0) { P.hp = 0; state = 'dead'; SFX.die(); document.exitPointerLock && document.exitPointerLock(); }
-  else if (fedCount === fish.length) { state = 'win'; SFX.win(); document.exitPointerLock && document.exitPointerLock(); }
+  if (P.hp <= 0) { P.hp = 0; setScreen('dead'); SFX.die(); document.exitPointerLock && document.exitPointerLock(); }
+  else if (fedCount === fish.length) { setScreen('win'); SFX.win(); document.exitPointerLock && document.exitPointerLock(); }
 }
