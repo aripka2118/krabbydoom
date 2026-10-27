@@ -22,6 +22,8 @@ const SFX = {
   pickup: () => { tone('square', 440, 880, .1, .08); tone('square', 660, 1320, .1, .08, .08); },
   splat: () => tone('sawtooth', 140, 40, .09, .08),
   spit: () => tone('sine', 300, 1000, .22, .12),
+  leg: () => { tone('sawtooth', 220, 520, .18, .06); tone('sawtooth', 520, 220, .18, .06, .18); },
+  catch: () => tone('square', 500, 900, .07, .07),
   empty: () => tone('square', 120, 100, .06, .06),
   win: () => [523, 659, 784, 659, 784, 1047].forEach((f, i) => tone('triangle', f, f, .18, .15, i * .13)),
   die: () => [400, 330, 260, 180].forEach((f, i) => tone('triangle', f, f * .95, .25, .14, i * .2)),

@@ -61,7 +61,7 @@ function renderWorld() {
   for (const f of fish) {
     const r = f.vx * pX + f.vy * pY;
     if (Math.abs(r) > .05) f.flip = r > 0;
-    const frames = f.fed ? f.tex.fed : f.tex.hungry;
+    const frames = f.legOut ? f.tex.noleg : f.fed ? f.tex.fed : f.tex.hungry;
     const z = f.t.ground
       ? f.t.size / 2 + (Math.hypot(f.vx, f.vy) > .1 ? Math.abs(Math.sin(f.anim * Math.PI)) * .03 : 0)
       : .5 + Math.sin(time * 2 + f.ph) * .05;
@@ -75,6 +75,7 @@ function renderWorld() {
   for (const d of decor) list.push({ x: d.x, y: d.y, z: .45, h: .9, tex: TEX.kelp });
   for (const s of shots) {
     if (s.kind === 'patty') list.push({ x: s.x, y: s.y, z: s.z + Math.sin(s.life * 20) * .02, h: .18, tex: TEX.patty });
+    else if (s.kind === 'leg') list.push({ x: s.x, y: s.y, z: s.z, h: .42, tex: TEX.leg[Math.floor(s.spin) & 7] });
     else list.push({ x: s.x, y: s.y, z: s.z, h: .16, tex: TEX.bubble });
   }
   for (const e of fx) list.push({ x: e.x, y: e.y, z: e.z, h: e.h, tex: e.tex });

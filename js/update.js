@@ -9,6 +9,54 @@ function throwPatty() {
   SFX.throw();
 }
 
+// Fred pulls off his leg and throws it. It follows a loop out through where the player was
+// standing and back to Fred: p(s) = Fred + u*L*sin(pi*s) + v*W*sin(2*pi*s), s = 0..1.
+function throwLeg(f, d) {
+  const ux = (P.x - f.x) / d, uy = (P.y - f.y) / d, side = Math.random() < .5 ? 1 : -1;
+  const L = Math.min(9, d);   // the loop's far tip lands right where the player is standing
+  // pick the widest loop (either side) that doesn't clip a wall, so it still fits down hallways
+  const clear = (sd, W) => {
+    for (let k = 1; k < 24; k++) {
+      const a = Math.PI * k / 24, out = L * Math.sin(a), lat = W * Math.sin(2 * a) * sd;
+      if (solid(f.x + ux * out - uy * lat, f.y + uy * out + ux * lat)) return false;
+    }
+    return true;
+  };
+  const wMax = Math.min(1.8, .2 * L + .4);
+  let sd = side, W = 0;
+  search: for (const w of [1, .7, .45, .25]) for (const s of [side, -side]) if (clear(s, wMax * w)) { sd = s; W = wMax * w; break search; }
+  f.legOut = true;
+  shots.push({ kind: 'leg', owner: f, x: f.x, y: f.y, z: .45, ux, uy, vx: -uy * sd, vy: ux * sd,
+    L, W, dur: .7 + L / 6, s: 0, back: false, hit: false, spin: 0, life: 8 });
+  SFX.leg();
+  say('Fred: "MY LEG!"', 1.2);
+}
+function updateLeg(s, dt) {
+  const f = s.owner;
+  s.spin += dt * 16; s.life -= dt;
+  let caught = s.life <= 0;
+  if (!s.back) {
+    s.s = Math.min(1, s.s + dt / s.dur);
+    const a = Math.PI * s.s, out = s.L * Math.sin(a), lat = s.W * Math.sin(2 * a);
+    const nx = f.x + s.ux * out + s.vx * lat, ny = f.y + s.uy * out + s.vy * lat;
+    if (solid(nx, ny)) s.back = true;   // bonked a wall: fly straight home instead
+    else { s.x = nx; s.y = ny; }
+    if (s.s >= 1) caught = true;
+  } else {
+    const dx = f.x - s.x, dy = f.y - s.y, d = Math.hypot(dx, dy);
+    if (d < .35) caught = true;
+    else { s.x += dx / d * 7 * dt; s.y += dy / d * 7 * dt; }
+  }
+  if (!s.hit && !f.fed && Math.hypot(s.x - P.x, s.y - P.y) < .45) {
+    s.hit = true; P.hp -= f.t.dmg; P.hurt = .6; SFX.hurt();
+    say("Ow! Fred's leg got you!", 1.2);
+  }
+  if (caught) {
+    s.life = 0; f.legOut = false; f.atk = 1.2 + Math.random() * 1.2;
+    SFX.catch();
+  }
+}
+
 function update(dt) {
   time += dt;
   // look
@@ -79,7 +127,13 @@ function update(dt) {
       if (f.alert) {
         let tx, ty, go = true;
         if (see) { tx = P.x; ty = P.y; } else { const t = flowTarget(f); tx = t.x; ty = t.y; }
-        if (f.t.ranged && see && d < 7) {
+        if (f.legOut) {
+          go = false;   // can't chase you on one leg
+        } else if (f.t.thrower && see && d < 8) {
+          if (d < 2.5) { tx = f.x - dx; ty = f.y - dy; }
+          else go = d > 6;
+          if (f.atk <= 0) throwLeg(f, d);
+        } else if (f.t.ranged && see && d < 7) {
           if (d < 3) { tx = f.x - dx; ty = f.y - dy; }
           else if (d < 5.5) {
             if (Math.random() < dt * .4) f.sd = -f.sd;
@@ -93,7 +147,7 @@ function update(dt) {
         } else if (see && d < (f.t.reach ? f.t.reach - .15 : .45 + f.t.size * .3)) {
           go = false;
         }
-        if (!f.t.ranged && d < (f.t.reach || .55 + f.t.size * .35) && f.atk <= 0) {
+        if (!f.t.ranged && !f.t.thrower && d < (f.t.reach || .55 + f.t.size * .35) && f.atk <= 0) {
           f.atk = f.t.atkRate || .9; P.hp -= f.t.dmg; P.hurt = .6; SFX.hurt();
           say(['Ow! That fish nibbled you!', 'Hey, I am not food!', 'Ouch! Feed it a patty!'][(Math.random() * 3) | 0], 1.2);
         }
@@ -114,6 +168,7 @@ function update(dt) {
 
   // projectiles
   for (const s of shots) {
+    if (s.kind === 'leg') { updateLeg(s, dt); continue; }
     s.life -= dt;
     const nx = s.x + s.dx * dt, ny = s.y + s.dy * dt;
     if (solid(nx, ny)) {

@@ -140,12 +140,92 @@ const FISH = {
   // Bubble Bass: slow waddling tank that needs a lot of patties and hits hard
   bass: { name: 'Bubble Bass', size: 1, speed: 1.05, hunger: 5, dmg: 15, ground: true, draw: bubbleBassTex,
           radius: .32, hitR: .45, reach: .95, stride: 4, atkRate: 1.3 },
+  // Fred: keeps his distance and throws his own leg like a boomerang (see throwLeg)
+  fred: { name: 'Fred', size: 1, speed: 1.6, hunger: 3, dmg: 12, ground: true, thrower: true, draw: fredTex,
+          radius: .25, hitR: .34, stride: 6 },
 };
 for (const t of Object.values(FISH)) {
   if (t.randomColor) continue;
   const draw = t.draw || fishTex;
   t.tex = { hungry: [draw(t, 'hungry', 0), draw(t, 'hungry', 1)], fed: [draw(t, 'fed', 0), draw(t, 'fed', 1)] };
+  if (t.thrower) t.tex.noleg = [draw(t, 'noleg', 0), draw(t, 'noleg', 1)];
 }
+
+// Fred, drawn facing left: tall khaki body, big eyes, stubbly chin, belt and brown slacks.
+// mood 'noleg' = yelling and hopping on one leg while the other one is out being thrown.
+function fredTex(t, mood, frame) {
+  return canvasTex(48, 112, g => {
+    const skin = '#a39a5c', fin = '#e8dfb0', finLine = '#9a8d55', pants = '#7a4a24', foot = '#e2d7a6', line = '#1c1c14';
+    const noleg = mood === 'noleg';
+    g.lineJoin = 'round'; g.lineCap = 'round'; g.lineWidth = 1.5; g.strokeStyle = line;
+    if (noleg && frame) g.translate(0, -3);
+    const leg = x => {
+      g.fillStyle = pants; g.fillRect(x - 4, 80, 8, 23); g.strokeRect(x - 4, 80, 8, 23);
+      g.fillStyle = foot; g.beginPath(); g.ellipse(x - 4, 105, 8, 3, 0, 0, 7); g.fill(); g.stroke();
+    };
+    leg(noleg ? 30 : frame ? 32 : 28);
+    if (!noleg) leg(frame ? 16 : 20);
+    // hips
+    g.fillStyle = pants; g.beginPath(); g.moveTo(12, 72); g.lineTo(38, 72); g.lineTo(37, 86); g.lineTo(12, 86); g.closePath(); g.fill(); g.stroke();
+    g.beginPath(); g.moveTo(25, 76); g.lineTo(25, 86); g.stroke();
+    const stripes = (path, x0, x1, y0, y1, n) => {
+      g.save(); g.clip(path); g.strokeStyle = finLine; g.lineWidth = 1;
+      for (let i = 1; i < n; i++) { const y = y0 + (y1 - y0) * i / n; g.beginPath(); g.moveTo(x0, y); g.lineTo(x1, y + 2); g.stroke(); }
+      g.restore(); g.strokeStyle = line; g.lineWidth = 1.5; g.stroke(path);
+    };
+    // dorsal fin on his back
+    const dp = new Path2D(); dp.moveTo(34, 12); dp.quadraticCurveTo(49, 36, 41, 66); dp.lineTo(34, 66); dp.closePath();
+    g.fillStyle = fin; g.fill(dp); stripes(dp, 30, 48, 12, 66, 9);
+    // body
+    const bp = new Path2D();
+    bp.moveTo(22, 3); bp.quadraticCurveTo(37, 3, 38, 22); bp.lineTo(38, 72); bp.lineTo(13, 72);
+    bp.quadraticCurveTo(9, 58, 10, 46); bp.quadraticCurveTo(6, 38, 8, 30); bp.quadraticCurveTo(8, 6, 22, 3);
+    g.fillStyle = skin; g.fill(bp); g.stroke(bp);
+    // stubbly chin
+    g.lineWidth = 1;
+    for (let i = 0; i < 4; i++) { g.beginPath(); g.moveTo(13 + i * 5, 47 + i); g.quadraticCurveTo(11 + i * 5, 56, 14 + i * 5, 66); g.stroke(); }
+    g.lineWidth = 1.5;
+    // belt
+    g.fillStyle = '#141414'; g.fillRect(12, 69, 27, 5);
+    g.fillStyle = '#f0c020'; g.fillRect(15, 69.5, 7, 4); g.strokeRect(15, 69.5, 7, 4);
+    // pectoral fin hanging down his side
+    const fp = new Path2D(); fp.moveTo(28, 46); fp.quadraticCurveTo(37, 70, 31, 93); fp.quadraticCurveTo(23, 72, 28, 46);
+    g.fillStyle = fin; g.fill(fp); stripes(fp, 20, 40, 46, 93, 8);
+    // nostrils + mouth
+    g.fillStyle = line;
+    g.beginPath(); g.arc(8, 34, .9, 0, 7); g.fill(); g.beginPath(); g.arc(12, 34, .9, 0, 7); g.fill();
+    if (noleg) {
+      g.fillStyle = '#4a1414'; g.beginPath(); g.ellipse(12, 42, 5.5, frame ? 4 : 3, 0, 0, 7); g.fill(); g.stroke();
+    } else if (mood === 'hungry') {
+      g.lineWidth = 2;
+      g.beginPath(); g.moveTo(5, 42); g.quadraticCurveTo(12, 37, 20, 41); g.stroke();
+      g.lineWidth = 1; g.beginPath(); g.moveTo(7, 44); g.quadraticCurveTo(12, 41, 18, 44); g.stroke();
+    } else {
+      g.lineWidth = 2; g.beginPath(); g.moveTo(5, 40); g.quadraticCurveTo(12, 46, 20, 40); g.stroke();
+      heart(g, 40, 8 - frame, 5, '#ff4d7a');
+    }
+    // big eyes looking down at you
+    g.lineWidth = 1.5;
+    for (const [ex, ey] of [[21, 21], [10, 23]]) {
+      g.fillStyle = '#fff'; g.beginPath(); g.ellipse(ex, ey, 7, 7.5, 0, 0, 7); g.fill(); g.stroke();
+      g.fillStyle = '#111';
+      if (mood === 'fed') { g.beginPath(); g.arc(ex, ey + 2, 3.5, Math.PI * 1.1, Math.PI * 1.9); g.stroke(); }
+      else { g.beginPath(); g.arc(ex - 3, ey + 3, noleg ? 2 : 2.7, 0, 7); g.fill(); }
+    }
+    if (mood === 'hungry') {
+      g.lineWidth = 2; g.beginPath(); g.moveTo(3, 13); g.lineTo(13, 17); g.moveTo(15, 11); g.lineTo(26, 14); g.stroke();
+    }
+  });
+}
+
+// Fred's thrown leg, pre-rotated in 8 steps so it spins in flight
+TEX.leg = [];
+for (let i = 0; i < 8; i++) TEX.leg.push(canvasTex(32, 32, g => {
+  g.translate(16, 16); g.rotate(i * Math.PI / 4);
+  g.lineWidth = 1.5; g.strokeStyle = '#1c1c14';
+  g.fillStyle = '#7a4a24'; g.fillRect(-4, -12, 8, 18); g.strokeRect(-4, -12, 8, 18);
+  g.fillStyle = '#e2d7a6'; g.beginPath(); g.ellipse(-4, 8, 8, 3, 0, 0, 7); g.fill(); g.stroke();
+}));
 
 // Bubble Bass, front on: round olive body, glasses, orange tank top, red shorts, stubby feet.
 // frame 0/1 shifts the feet and body for a waddle.
