@@ -147,7 +147,7 @@ for (const t of Object.values(FISH)) {
 // Drawn facing left like the other fish so the same flip logic applies.
 function anchovyTex(hue, sat, lit, mood, frame) {
   return canvasTex(48, 112, g => {
-    const body = `hsl(${hue},${sat}%,${lit}%)`, dark = `hsl(${hue},${sat}%,${lit - 22}%)`, line = '#161616';
+    const body = `hsl(${hue},${sat}%,${lit}%)`, dark = `hsl(${hue},${sat}%,${lit * .65}%)`, line = '#161616';
     g.lineJoin = 'round'; g.lineCap = 'round';
     // legs: [hip x, foot x], swapped between frames for a running stride
     const legs = frame ? [[29, 34], [22, 12]] : [[29, 16], [22, 30]];
@@ -208,8 +208,18 @@ function anchovyTex(hue, sat, lit, mood, frame) {
     }
   });
 }
+// [hue, saturation, lightness] ranges; each anchovy picks one colour and jitters within it
+const ANCHOVY_COLORS = [
+  { name: 'brown',       h: [24, 32],   s: [42, 55], l: [36, 44] },
+  { name: 'dark yellow', h: [44, 50],   s: [68, 80], l: [40, 48] },
+  { name: 'dark red',    h: [-6, 4],    s: [58, 70], l: [32, 40] },
+  { name: 'light blue',  h: [192, 210], s: [60, 75], l: [70, 80] },
+  { name: 'dark green',  h: [118, 140], s: [42, 55], l: [27, 34] },
+];
 function anchovySet() {
-  const h = 188 + Math.random() * 30, s = 55 + Math.random() * 25, l = 66 + Math.random() * 14;
+  const c = ANCHOVY_COLORS[(Math.random() * ANCHOVY_COLORS.length) | 0];
+  const pick = ([a, b]) => a + Math.random() * (b - a);
+  const h = pick(c.h), s = pick(c.s), l = pick(c.l);
   return {
     hungry: [anchovyTex(h, s, l, 'hungry', 0), anchovyTex(h, s, l, 'hungry', 1)],
     fed: [anchovyTex(h, s, l, 'fed', 0), anchovyTex(h, s, l, 'fed', 1)],
