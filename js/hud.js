@@ -72,11 +72,12 @@ function drawMap() {
   const cs = 4, ox = W - MW * cs - 6, oy = 6;
   ctx.fillStyle = 'rgba(0,0,0,.55)'; ctx.fillRect(ox - 2, oy - 2, MW * cs + 4, MH * cs + 4);
   const col = { '#': '#b8577f', P: '#e9921f', W: '#8b5a2b', K: '#5d7186' };
+  for (const [k, c] of Object.entries(KEYS)) col[k.toUpperCase()] = c.col;
   for (let y = 0; y < MH; y++) for (let x = 0; x < MW; x++) {
     const c = col[MAP[y][x]];
     if (c) { ctx.fillStyle = c; ctx.fillRect(ox + x * cs, oy + y * cs, cs, cs); }
   }
-  for (const it of items) if (!it.taken) { ctx.fillStyle = it.kind === 'ammo' ? '#ffd23a' : '#7fd4f5'; ctx.fillRect(ox + it.x * cs - 1, oy + it.y * cs - 1, 2, 2); }
+  for (const it of items) if (!it.taken) { ctx.fillStyle = it.kind === 'key' ? KEYS[it.key].col : it.kind === 'ammo' ? '#ffd23a' : '#7fd4f5'; ctx.fillRect(ox + it.x * cs - 1, oy + it.y * cs - 1, 2, 2); }
   for (const f of fish) { ctx.fillStyle = f.fed ? '#5f5' : '#f44'; ctx.fillRect(ox + f.x * cs - 1.5, oy + f.y * cs - 1.5, 3, 3); }
   ctx.strokeStyle = '#fff'; ctx.lineWidth = 1;
   ctx.beginPath(); ctx.moveTo(ox + P.x * cs, oy + P.y * cs); ctx.lineTo(ox + (P.x + Math.cos(P.a) * 1.5) * cs, oy + (P.y + Math.sin(P.a) * 1.5) * cs); ctx.stroke();
@@ -102,6 +103,16 @@ function drawHUD() {
   ctx.drawImage(TEX.patty.cv, W / 2 - 42, H - 32, 30, 30);
   txt('PATTIES', W / 2 - 8, H - 20, 9, '#ffd23a', 'left');
   txt('' + P.ammo, W / 2 - 8, H - 6, 14, P.ammo ? '#fff' : '#ff6a5a', 'left');
+  // key slots, only on levels that have keys: dim until picked up
+  const lvKeys = Object.keys(KEYS).filter(k => P.keys[k] || items.some(it => it.key === k));
+  if (lvKeys.length) {
+    txt('KEYS', 300, H - 20, 9, '#e8f6ff', 'left');
+    lvKeys.forEach((k, i) => {
+      ctx.globalAlpha = P.keys[k] ? 1 : .25;
+      ctx.drawImage(KEYS[k].tex.cv, 298 + i * 17, H - 17, 16, 16);
+      ctx.globalAlpha = 1;
+    });
+  }
   txt('FISH FED', W - 10, H - 20, 9, '#ffd84a', 'right');
   txt(fedCount + ' / ' + fish.length, W - 10, H - 6, 14, '#fff', 'right');
   if (msgT > 0) txt(message, W / 2, 22, 12, '#fff6b0');

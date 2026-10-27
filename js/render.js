@@ -2,6 +2,23 @@
 // ---------------------------------------------------------------------------
 // Render
 // ---------------------------------------------------------------------------
+// One wall column. o = how far a door has slid up into the ceiling (0 = closed)
+function wallCol(x, pd, side, tex, rdx, rdy, o) {
+  let wx = side === 0 ? P.y + pd * rdy : P.x + pd * rdx;
+  wx -= Math.floor(wx);
+  let tx = (wx * TS) | 0;
+  if ((side === 0 && rdx > 0) || (side === 1 && rdy < 0)) tx = TS - tx - 1;
+  const lh = H / pd, top = HZ - lh / 2;
+  const y0 = Math.max(0, Math.floor(top)), y1 = Math.min(H, Math.floor(HZ + lh / 2 - o * lh));
+  const step = TS / lh;
+  let tp = (y0 - top) * step + o * TS;
+  const k = fogK(pd), dk = side ? .72 : 1, tpx = tex.px;
+  for (let y = y0; y < y1; y++) {
+    px[y * W + x] = fogc(tpx[((tp | 0) & 63) * 64 + tx], k, dk);
+    tp += step;
+  }
+}
+
 function renderWorld() {
   const dX = Math.cos(P.a), dY = Math.sin(P.a), pX = -dY * PL, pY = dX * PL;
   const sand = TEX.sand.px, sky = TEX.sky.px;
@@ -23,7 +40,7 @@ function renderWorld() {
     }
   }
 
-  // walls
+  // walls (a door that is sliding open lets the ray carry on to whatever is behind it)
   for (let x = 0; x < W; x++) {
     const cam = 2 * x / W - 1;
     const rdx = dX + pX * cam || 1e-9, rdy = dY + pY * cam || 1e-9;
@@ -32,28 +49,21 @@ function renderWorld() {
     let stx, sty, sdx, sdy;
     if (rdx < 0) { stx = -1; sdx = (P.x - mx) * ddx; } else { stx = 1; sdx = (mx + 1 - P.x) * ddx; }
     if (rdy < 0) { sty = -1; sdy = (P.y - my) * ddy; } else { sty = 1; sdy = (my + 1 - P.y) * ddy; }
-    let side = 0, tex = null;
+    let side = 0, tex = null, door = null;
     for (let i = 0; i < 64; i++) {
       if (sdx < sdy) { sdx += ddx; mx += stx; side = 0; } else { sdy += ddy; my += sty; side = 1; }
       tex = WALLS[cell(mx, my)];
-      if (tex) break;
+      if (!tex) continue;
+      if (tex.door && !door && doorO[my * MW + mx] > 0) {
+        door = { pd: side === 0 ? sdx - ddx : sdy - ddy, side, tex, o: doorO[my * MW + mx] };
+        tex = null; continue;
+      }
+      break;
     }
     const pd = side === 0 ? sdx - ddx : sdy - ddy;
-    zbuf[x] = pd;
-    if (!tex) continue;
-    let wx = side === 0 ? P.y + pd * rdy : P.x + pd * rdx;
-    wx -= Math.floor(wx);
-    let tx = (wx * TS) | 0;
-    if ((side === 0 && rdx > 0) || (side === 1 && rdy < 0)) tx = TS - tx - 1;
-    const lh = H / pd, top = HZ - lh / 2;
-    const y0 = Math.max(0, Math.floor(top)), y1 = Math.min(H, Math.floor(HZ + lh / 2));
-    const step = TS / lh;
-    let tp = (y0 - top) * step;
-    const k = fogK(pd), dk = side ? .72 : 1, tpx = tex.px;
-    for (let y = y0; y < y1; y++) {
-      px[y * W + x] = fogc(tpx[((tp | 0) & 63) * 64 + tx], k, dk);
-      tp += step;
-    }
+    zbuf[x] = door && door.o < .5 ? door.pd : pd;
+    if (tex) wallCol(x, pd, side, tex, rdx, rdy, 0);
+    if (door) wallCol(x, door.pd, door.side, door.tex, rdx, rdy, door.o);
   }
 
   // sprites
@@ -70,6 +80,7 @@ function renderWorld() {
   for (const it of items) {
     if (it.taken) continue;
     if (it.kind === 'ammo') list.push({ x: it.x, y: it.y, z: .2, h: .4, tex: TEX.crate });
+    else if (it.kind === 'key') list.push({ x: it.x, y: it.y, z: .3 + Math.sin(time * 3 + it.x) * .05, h: .28, tex: KEYS[it.key].tex });
     else list.push({ x: it.x, y: it.y, z: .28 + Math.sin(time * 3) * .04, h: .32, tex: TEX.water });
   }
   for (const d of decor) list.push({ x: d.x, y: d.y, z: .45, h: .9, tex: TEX.kelp });

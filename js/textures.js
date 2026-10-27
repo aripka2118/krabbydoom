@@ -435,3 +435,41 @@ TEX.splat = canvasTex(32, 32, g => {
   dots(g, 26, ['#6b3b1c', '#e8a24c', '#4fc04a', '#ffd23a', '#d08a38'], 1, 3, 32, 32);
 });
 TEX.heart = canvasTex(16, 16, g => heart(g, 8, 8, 6, '#ff4d7a'));
+
+// Keys and locked doors. Lowercase letter on the map = key, same letter uppercase = its door.
+const KEYS = {
+  r: { name: 'red', col: '#ff4a4a', dark: '#8a1010' },
+  y: { name: 'yellow', col: '#ffd23a', dark: '#8a6a00' },
+  u: { name: 'blue', col: '#4aa8ff', dark: '#10408a' },
+};
+function keyTex(c) {
+  return canvasTex(32, 32, g => {
+    g.lineCap = 'round';
+    for (const [col, lw] of [[c.dark, 7], [c.col, 4]]) {
+      g.strokeStyle = col; g.lineWidth = lw;
+      g.beginPath(); g.arc(10, 10, 6, 0, 7); g.stroke();
+      g.beginPath(); g.moveTo(14, 14); g.lineTo(27, 27); g.moveTo(22, 22); g.lineTo(26, 18); g.moveTo(26, 26); g.lineTo(29, 23); g.stroke();
+    }
+    g.fillStyle = 'rgba(255,255,255,.8)'; g.fillRect(7, 5, 3, 2);
+  });
+}
+function doorTex(c) {
+  const t = canvasTex(TS, TS, g => {
+    g.fillStyle = '#3a3f48'; g.fillRect(0, 0, TS, TS);
+    const cols = ['#8b5a2b', '#7a4d24', '#94622f', '#83552a'];
+    for (let p = 0; p < 4; p++) {
+      g.fillStyle = cols[p]; g.fillRect(6 + p * 13, 6, 13, 58);
+      g.fillStyle = 'rgba(40,20,5,.6)'; g.fillRect(6 + p * 13, 6, 1, 58);
+    }
+    g.fillStyle = c.col; g.fillRect(6, 6, 52, 6); g.fillRect(6, 34, 52, 5);
+    g.fillStyle = c.dark; g.fillRect(6, 11, 52, 1); g.fillRect(6, 38, 52, 1);
+    g.fillStyle = c.dark; g.beginPath(); g.arc(32, 24, 9, 0, 7); g.fill();
+    g.fillStyle = c.col; g.beginPath(); g.arc(32, 24, 7, 0, 7); g.fill();
+    g.fillStyle = '#111'; g.beginPath(); g.arc(32, 22, 2.5, 0, 7); g.fill(); g.fillRect(31, 22, 2, 6);
+    g.fillStyle = '#9aa3ad';
+    for (const [x, y] of [[3, 4], [60, 4], [3, 32], [60, 32], [3, 60], [60, 60]]) g.fillRect(x - 1, y - 1, 2, 2);
+  });
+  t.door = true;
+  return t;
+}
+for (const [k, c] of Object.entries(KEYS)) { c.tex = keyTex(c); WALLS[k.toUpperCase()] = doorTex(c); }

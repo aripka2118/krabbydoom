@@ -95,9 +95,28 @@ function update(dt) {
   // pickups
   for (const it of items) {
     if (it.taken || Math.hypot(it.x - P.x, it.y - P.y) > .55) continue;
-    if (it.kind === 'ammo') { it.taken = true; P.ammo += 10; say('+10 Krabby Patties'); SFX.pickup(); P.glow = .5; }
+    if (it.kind === 'key') { it.taken = true; P.keys[it.key] = true; say('Got the ' + KEYS[it.key].name + ' key!'); SFX.key(); P.glow = .5; }
+    else if (it.kind === 'ammo') { it.taken = true; P.ammo += 10; say('+10 Krabby Patties'); SFX.pickup(); P.glow = .5; }
     else if (P.hp < 100) { it.taken = true; P.hp = Math.min(100, P.hp + 25); say('Ahh, refreshing sea water! +25 moisture'); SFX.pickup(); P.glow = .5; }
   }
+  // locked doors: walk up to one holding its key and it slides open
+  lockedT -= dt;
+  const pcx = Math.floor(P.x), pcy = Math.floor(P.y);
+  for (let y = pcy - 1; y <= pcy + 1; y++) for (let x = pcx - 1; x <= pcx + 1; x++) {
+    const ch = cell(x, y), k = ch.toLowerCase();
+    if (!KEYS[k] || ch === k || doorO[y * MW + x] > 0) continue;
+    const nx = Math.max(x, Math.min(x + 1, P.x)), ny = Math.max(y, Math.min(y + 1, P.y));
+    if (Math.hypot(P.x - nx, P.y - ny) > .45) continue;
+    if (P.keys[k]) { doorO[y * MW + x] = .01; opening.push({ x, y }); SFX.door(); say('Opened the ' + KEYS[k].name + ' door!'); }
+    else if (lockedT <= 0) { SFX.empty(); say('Locked! You need the ' + KEYS[k].name + ' key.', 1.5); lockedT = 1.5; }
+  }
+  for (const d of opening) {
+    const i = d.y * MW + d.x;
+    doorO[i] = Math.min(1, doorO[i] + dt * 1.6);
+    if (doorO[i] >= 1) { MAP[d.y] = MAP[d.y].slice(0, d.x) + '.' + MAP[d.y].slice(d.x + 1); d.done = true; flowT = 0; }
+  }
+  opening = opening.filter(d => !d.done);
+
   // never leave the player stranded without patties
   if (P.ammo === 0 && !shots.some(s => s.kind === 'patty') && !items.some(i => i.kind === 'ammo' && !i.taken) && fedCount < fish.length) {
     items.push({ kind: 'ammo', x: start.x, y: start.y });

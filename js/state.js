@@ -3,14 +3,15 @@
 // Game state
 // ---------------------------------------------------------------------------
 const P = { x: 1.5, y: 1.5, a: 0, hp: 100, ammo: 20, cool: 0, throwT: 0, bob: 0, hurt: 0, grin: 0, glow: 0 };
-let fish = [], items = [], decor = [], shots = [], fx = [];
+let fish = [], items = [], decor = [], shots = [], fx = [], opening = [];
 let fedCount = 0, state = 'menu', time = 0, showMap = false, start = { x: 1.5, y: 1.5 };
-let message = '', msgT = 0, flowT = 0, emptyT = 0;
+let message = '', msgT = 0, flowT = 0, emptyT = 0, lockedT = 0;
 const FED_LINES = ['Mmm, Krabby Patty!', 'Order up!', 'One happy fish!', 'Tastes like freedom!', 'Barnacles, that hit the spot!'];
 function say(s, t = 2.2) { message = s; msgT = t; }
 
 function reset() {
-  fish = []; items = []; decor = []; shots = []; fx = []; fedCount = 0;
+  fish = []; items = []; decor = []; shots = []; fx = []; opening = []; fedCount = 0;
+  MAP = LEVELS[currentLevel].map.slice(); doorO.fill(0);
   for (let y = 0; y < MH; y++) for (let x = 0; x < MW; x++) {
     const ch = MAP[y][x], cx = x + .5, cy = y + .5;
     if (ch === 'S') { P.x = cx; P.y = cy; start = { x: cx, y: cy }; }
@@ -23,8 +24,9 @@ function reset() {
     else if (ch === 'a') items.push({ kind: 'ammo', x: cx, y: cy });
     else if (ch === 'h') items.push({ kind: 'water', x: cx, y: cy });
     else if (ch === 'k') decor.push({ x: cx, y: cy });
+    else if (KEYS[ch]) items.push({ kind: 'key', key: ch, x: cx, y: cy });
   }
-  Object.assign(P, { a: LEVELS[currentLevel].angle, hp: 100, ammo: 20, cool: 0, throwT: 0, bob: 0, hurt: 0, grin: 0, glow: 0 });
+  Object.assign(P, { a: LEVELS[currentLevel].angle, keys: {}, hp: 100, ammo: 20, cool: 0, throwT: 0, bob: 0, hurt: 0, grin: 0, glow: 0 });
   message = ''; msgT = 0;
   buildFlow();
 }
