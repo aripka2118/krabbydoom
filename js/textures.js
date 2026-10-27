@@ -134,9 +134,86 @@ const FISH = {
   guppy:   { name: 'Guppy',   body: '#ff8c3a', belly: '#ffd27a', fin: '#e0552a', size: .55, speed: 2.4, hunger: 1, dmg: 6 },
   puffer:  { name: 'Puffer',  body: '#9b6ad6', belly: '#e4d0ff', fin: '#6c3fb0', spots: '#5b2f99', round: true, size: .7, speed: 1.4, hunger: 2, dmg: 8, ranged: true },
   grouper: { name: 'Grouper', body: '#3f78d6', belly: '#bcd6ff', fin: '#244f9e', spots: '#2a5bb0', size: .95, speed: 1.15, hunger: 3, dmg: 14 },
+  // Anchovies walk on the floor and get their own random blue per fish (textures built in reset)
+  anchovy: { name: 'Anchovy', size: .9, speed: 2.9, hunger: 1, dmg: 5, ground: true, randomColor: true,
+             radius: .2, hitR: .3, reach: .75, stride: 10 },
 };
 for (const t of Object.values(FISH)) {
+  if (t.randomColor) continue;
   t.tex = { hungry: [fishTex(t, 'hungry', 0), fishTex(t, 'hungry', 1)], fed: [fishTex(t, 'fed', 0), fishTex(t, 'fed', 1)] };
+}
+
+// Anchovy: tall skinny body on two legs, googly eyes on top, mouth gaping open.
+// Drawn facing left like the other fish so the same flip logic applies.
+function anchovyTex(hue, sat, lit, mood, frame) {
+  return canvasTex(48, 112, g => {
+    const body = `hsl(${hue},${sat}%,${lit}%)`, dark = `hsl(${hue},${sat}%,${lit - 22}%)`, line = '#161616';
+    g.lineJoin = 'round'; g.lineCap = 'round';
+    // legs: [hip x, foot x], swapped between frames for a running stride
+    const legs = frame ? [[29, 34], [22, 12]] : [[29, 16], [22, 30]];
+    legs.forEach(([hx, fx], i) => {
+      for (const [w, c] of [[5, line], [3, i ? body : dark]]) {
+        g.strokeStyle = c; g.lineWidth = w;
+        g.beginPath(); g.moveTo(hx, 80); g.quadraticCurveTo((hx + fx) / 2 + 2, 95, fx, 104); g.lineTo(fx - 8, 107); g.stroke();
+      }
+    });
+    // body
+    const bp = new Path2D();
+    bp.moveTo(19, 13);
+    bp.quadraticCurveTo(31, 9, 33, 22);
+    bp.lineTo(34, 62);
+    bp.quadraticCurveTo(35, 80, 29, 86);
+    bp.lineTo(20, 86);
+    bp.quadraticCurveTo(15, 74, 15, 58);
+    bp.lineTo(14, 44);
+    bp.quadraticCurveTo(9, 30, 12, 20);
+    bp.quadraticCurveTo(14, 14, 19, 13);
+    g.fillStyle = body; g.fill(bp);
+    g.save(); g.clip(bp);
+    g.fillStyle = '#e6cdb2'; g.fillRect(0, 50, 48, 12);
+    g.fillStyle = line; g.fillRect(0, 49.5, 48, 1); g.fillRect(0, 61.5, 48, 1);
+    g.restore();
+    g.strokeStyle = line; g.lineWidth = 1.5; g.stroke(bp);
+    g.beginPath(); g.moveTo(26, 79); g.quadraticCurveTo(29, 81, 31, 78); g.lineWidth = 1; g.stroke();
+    // striped side fin
+    const fp = new Path2D();
+    fp.moveTo(29, 54); fp.quadraticCurveTo(42, 58, 37, 77); fp.quadraticCurveTo(27, 70, 29, 54);
+    g.fillStyle = dark; g.fill(fp);
+    g.save(); g.clip(fp); g.strokeStyle = body; g.lineWidth = 1;
+    for (let i = 0; i < 4; i++) { g.beginPath(); g.moveTo(29 + i * 3, 54); g.lineTo(31 + i * 3, 78); g.stroke(); }
+    g.restore();
+    g.strokeStyle = line; g.lineWidth = 1.5; g.stroke(fp);
+    if (mood === 'hungry') {
+      // gaping mouth, tongue, upper lip and pointy lower jaw
+      g.fillStyle = '#7d1c1c'; g.beginPath();
+      g.moveTo(12, 17); g.quadraticCurveTo(26, 18, 26, 33); g.quadraticCurveTo(25, 45, 13, 46);
+      g.lineTo(6, 44); g.quadraticCurveTo(6, 28, 12, 17); g.closePath(); g.fill(); g.stroke();
+      g.fillStyle = '#ff6f6f'; g.beginPath(); g.ellipse(19, 33, 4.5, 5.5, 0, 0, 7); g.fill();
+      g.fillStyle = '#ffb3b3'; g.beginPath(); g.ellipse(18, 31, 2, 2, 0, 0, 7); g.fill();
+      g.fillStyle = body; g.beginPath();
+      g.moveTo(11, 15); g.quadraticCurveTo(5, 26, 8, 37); g.lineTo(11, 36); g.quadraticCurveTo(10, 26, 15, 17); g.closePath(); g.fill(); g.stroke();
+      const jy = frame ? 43 : 40;
+      g.beginPath(); g.moveTo(16, 39); g.quadraticCurveTo(10, 42, 2, jy); g.quadraticCurveTo(9, 50, 16, 52); g.closePath(); g.fill(); g.stroke();
+    } else {
+      g.strokeStyle = line; g.lineWidth = 1.5;
+      g.beginPath(); g.moveTo(12, 26); g.quadraticCurveTo(15, 37, 23, 32); g.stroke();
+      g.fillStyle = 'rgba(255,120,150,.9)'; g.beginPath(); g.arc(24, 28, 3, 0, 7); g.fill();
+      heart(g, 40, 18 - frame, 5, '#ff4d7a');
+    }
+    // googly eyes on top of the head
+    for (const [ex, ey] of [[26, 8], [16, 9]]) {
+      g.fillStyle = '#fff'; g.beginPath(); g.ellipse(ex, ey, 5.5, 6, 0, 0, 7); g.fill();
+      g.strokeStyle = line; g.lineWidth = 1.5; g.stroke();
+      g.fillStyle = '#111'; g.beginPath(); g.arc(ex - 2, ey + (mood === 'hungry' ? 0 : 1), mood === 'hungry' ? 2.2 : 2.7, 0, 7); g.fill();
+    }
+  });
+}
+function anchovySet() {
+  const h = 188 + Math.random() * 30, s = 55 + Math.random() * 25, l = 66 + Math.random() * 14;
+  return {
+    hungry: [anchovyTex(h, s, l, 'hungry', 0), anchovyTex(h, s, l, 'hungry', 1)],
+    fed: [anchovyTex(h, s, l, 'fed', 0), anchovyTex(h, s, l, 'fed', 1)],
+  };
 }
 
 TEX.patty = canvasTex(32, 32, g => {

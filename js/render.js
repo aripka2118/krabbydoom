@@ -61,8 +61,11 @@ function renderWorld() {
   for (const f of fish) {
     const r = f.vx * pX + f.vy * pY;
     if (Math.abs(r) > .05) f.flip = r > 0;
-    const frames = f.fed ? f.t.tex.fed : f.t.tex.hungry;
-    list.push({ x: f.x, y: f.y, z: .5 + Math.sin(time * 2 + f.ph) * .05, h: f.t.size, tex: frames[Math.floor(f.anim) % 2], flip: f.flip, flash: f.flash > 0 });
+    const frames = f.fed ? f.tex.fed : f.tex.hungry;
+    const z = f.t.ground
+      ? f.t.size / 2 + (Math.hypot(f.vx, f.vy) > .1 ? Math.abs(Math.sin(f.anim * Math.PI)) * .03 : 0)
+      : .5 + Math.sin(time * 2 + f.ph) * .05;
+    list.push({ x: f.x, y: f.y, z, h: f.t.size, tex: frames[Math.floor(f.anim) % 2], flip: f.flip, flash: f.flash > 0 });
   }
   for (const it of items) {
     if (it.taken) continue;

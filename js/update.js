@@ -62,7 +62,7 @@ function update(dt) {
 
   // fish
   for (const f of fish) {
-    f.anim += dt * (f.fed ? 3 : 7);
+    f.anim += dt * (f.t.stride || 7) * (f.fed ? .45 : 1);
     f.flash -= dt; f.atk -= dt;
     const ox = f.x, oy = f.y;
     const spd = f.t.speed;
@@ -90,10 +90,10 @@ function update(dt) {
             shots.push({ kind: 'bubble', x: f.x + dx / d * .4, y: f.y + dy / d * .4, dx: dx / d * 5, dy: dy / d * 5, z: .5, life: 4 });
             SFX.spit();
           }
-        } else if (see && d < .45 + f.t.size * .3) {
+        } else if (see && d < (f.t.reach ? f.t.reach - .15 : .45 + f.t.size * .3)) {
           go = false;
         }
-        if (!f.t.ranged && d < .55 + f.t.size * .35 && f.atk <= 0) {
+        if (!f.t.ranged && d < (f.t.reach || .55 + f.t.size * .35) && f.atk <= 0) {
           f.atk = .9; P.hp -= f.t.dmg; P.hurt = .6; SFX.hurt();
           say(['Ow! That fish nibbled you!', 'Hey, I am not food!', 'Ouch! Feed it a patty!'][(Math.random() * 3) | 0], 1.2);
         }
@@ -106,8 +106,8 @@ function update(dt) {
     // separation
     for (const o of fish) {
       if (o === f) continue;
-      const sx = f.x - o.x, sy = f.y - o.y, sd = Math.hypot(sx, sy);
-      if (sd > 0 && sd < .6) moveEnt(f, sx / sd * (.6 - sd) * .5, sy / sd * (.6 - sd) * .5, f.r);
+      const sx = f.x - o.x, sy = f.y - o.y, sd = Math.hypot(sx, sy), min = f.r + o.r + .1;
+      if (sd > 0 && sd < min) moveEnt(f, sx / sd * (min - sd) * .5, sy / sd * (min - sd) * .5, f.r);
     }
     f.vx = (f.x - ox) / dt; f.vy = (f.y - oy) / dt;
   }
@@ -126,7 +126,7 @@ function update(dt) {
     if (s.kind === 'patty') {
       for (const f of fish) {
         if (f.fed) continue;
-        const hr = .2 + f.t.size * .4;
+        const hr = f.t.hitR || .2 + f.t.size * .4;
         if ((f.x - s.x) ** 2 + (f.y - s.y) ** 2 > hr * hr) continue;
         s.life = 0; f.alert = true; f.flash = .15; f.hunger--;
         moveEnt(f, s.dx * .02, s.dy * .02, f.r);
