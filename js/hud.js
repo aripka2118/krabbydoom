@@ -125,7 +125,7 @@ function render() {
       'Hungry fish nibble you and dry you out. Patties make them happy.',
       'WASD / Arrows - move     Mouse or Q / E - turn     Shift - run',
       'Click / Space - throw Krabby Patty     M - map',
-      'Watch out for the anchovy swarm! One patty each.',
+      'Anchovies: 1 patty each.   Bubble Bass: slow, hits hard, needs 5!',
     ], 'CLICK TO START');
     ctx.drawImage(TEX.patty.cv, W / 2 - 24, 186, 48, 48);
   } else if (state === 'win') {

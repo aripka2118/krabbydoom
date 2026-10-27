@@ -14,8 +14,8 @@ function reset() {
   for (let y = 0; y < MH; y++) for (let x = 0; x < MW; x++) {
     const ch = MAP[y][x], cx = x + .5, cy = y + .5;
     if (ch === 'S') { P.x = cx; P.y = cy; start = { x: cx, y: cy }; }
-    else if (ch === 'f' || ch === 's' || ch === 'g' || ch === 'n') {
-      const t = FISH[{ f: 'guppy', s: 'puffer', g: 'grouper', n: 'anchovy' }[ch]];
+    else if ('fsgnb'.includes(ch)) {
+      const t = FISH[{ f: 'guppy', s: 'puffer', g: 'grouper', n: 'anchovy', b: 'bass' }[ch]];
       fish.push({ t, x: cx, y: cy, r: t.radius || Math.min(.3, t.size * .35), hunger: t.hunger, fed: false, alert: false,
         atk: 1 + Math.random(), flash: 0, anim: Math.random() * 2, ph: Math.random() * 6, vx: 0, vy: 0, flip: false, wt: 0, wa: 0, sd: 1,
         tex: t.randomColor ? anchovySet() : t.tex });

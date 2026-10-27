@@ -94,7 +94,7 @@ function update(dt) {
           go = false;
         }
         if (!f.t.ranged && d < (f.t.reach || .55 + f.t.size * .35) && f.atk <= 0) {
-          f.atk = .9; P.hp -= f.t.dmg; P.hurt = .6; SFX.hurt();
+          f.atk = f.t.atkRate || .9; P.hp -= f.t.dmg; P.hurt = .6; SFX.hurt();
           say(['Ow! That fish nibbled you!', 'Hey, I am not food!', 'Ouch! Feed it a patty!'][(Math.random() * 3) | 0], 1.2);
         }
         if (go) {
