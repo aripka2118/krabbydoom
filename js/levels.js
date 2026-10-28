@@ -3,12 +3,13 @@
 // Levels
 // ---------------------------------------------------------------------------
 // # coral  P pineapple  W wood  K rock | S start  n anchovy  b Bubble Bass  d Fred
-// (f guppy  s puffer: shelved)
+// (f guppy: shelved; the puffer fish is in FISH but has no map letter)
 // a patty crate  h sea water (moisture)  k kelp
 // keys r red  y yellow  u blue | locked doors R red  Y yellow  U blue
 // house walls L blue planks  T kitchen tile  O bedroom weave  G bathroom wallpaper
 //             B bookshelf  C grey stone  N porthole window  D front door (just decoration)
-// furniture c armchair  t TV  z bed  i fridge  e table  l barrel  x treasure chest
+// + door that opens by itself when anyone is near
+// furniture c armchair  s couch  t TV  z bed  i fridge  e table  l barrel  x treasure chest
 //           w bathtub  o toilet  g Gary (you can walk past Gary; everything else is solid)
 // floor: sand wood pink stone | ceiling: sky net plaster wood
 // angle = starting view direction (0 = east, PI/2 = south, -PI/2 = north)
@@ -42,11 +43,11 @@ const LEVELS = {
     map: [
       'LLLLNLLLLLTTTTTTTTTTTTT',
       'L.c..t..g.T..i....i...T',
-      'L.........T.....e.....T',
+      'L....s....T.....e.....T',
       'D..S..........l....n..T',
       'L....n....T...........T',
       'L.a.......T.....h.....T',
-      'OOOO.OOOOOGGGGGG.GGGGGG',
+      'OOOO+OOOOOGGGGGG+GGGGGG',
       'B....x....G.....w.....G',
       'B.z.......G...........G',
       'O....n.............n..G',
@@ -79,24 +80,33 @@ const MENU_LEVEL = '1-3';   // level shown panning behind the menus
 
 const WORLDS = [];
 const FACING = { east: 0, south: Math.PI / 2, west: Math.PI, north: -Math.PI / 2 };
+// Turn a level as written in a worlds/ file into a LEVELS entry, checking it for mistakes
+function makeLevel(lvl, title, needFish) {
+  const problems = checkLevel(lvl.map, needFish);
+  if (lvl.floor && !FLOORS[lvl.floor]) problems.push("unknown floor '" + lvl.floor + "' (use " + Object.keys(FLOORS).join(', ') + ')');
+  if (lvl.ceiling && !CEILINGS[lvl.ceiling]) problems.push("unknown ceiling '" + lvl.ceiling + "' (use " + Object.keys(CEILINGS).join(', ') + ')');
+  for (const p of problems) console.warn(title + ' - ' + p);
+  return { name: lvl.name, title, intro: lvl.intro || title, angle: FACING[lvl.facing] || 0,
+    floor: lvl.floor, ceiling: lvl.ceiling, map: lvl.map, problems };
+}
 function addWorld(def) {
   const n = WORLDS.length + 1, world = { name: def.name, keys: [] };
   def.levels.forEach((lvl, i) => {
-    const key = n + '-' + (i + 1), title = 'Level ' + key + ': ' + lvl.name;
-    const problems = checkLevel(lvl.map);
-    if (lvl.floor && !FLOORS[lvl.floor]) problems.push("unknown floor '" + lvl.floor + "' (use " + Object.keys(FLOORS).join(', ') + ')');
-    if (lvl.ceiling && !CEILINGS[lvl.ceiling]) problems.push("unknown ceiling '" + lvl.ceiling + "' (use " + Object.keys(CEILINGS).join(', ') + ')');
-    for (const p of problems) console.warn(title + ' - ' + p);
-    LEVELS[key] = { name: lvl.name, title, intro: lvl.intro || title, angle: FACING[lvl.facing] || 0,
-      floor: lvl.floor, ceiling: lvl.ceiling, map: lvl.map, world: n - 1, index: i, problems };
+    const key = n + '-' + (i + 1);
+    LEVELS[key] = Object.assign(makeLevel(lvl, 'Level ' + key + ': ' + lvl.name, true), { world: n - 1, index: i });
     world.keys.push(key);
   });
   WORLDS.push(world);
 }
+// The Map Test slot on the main menu (js/worlds/testmap.js): fish are optional and
+// with none the level never ends, so you can just walk the layout
+function addTestMap(lvl) {
+  LEVELS.test = makeLevel(Object.assign({ name: 'Map Test', intro: 'Map test: Esc to restart or leave' }, lvl), 'Map Test', false);
+}
 
 // Catch map mistakes up front so a bad level shows a message instead of breaking the game
-const FISH_CH = 'fsnbd';
-function checkLevel(m) {
+const FISH_CH = 'fnbd';
+function checkLevel(m, needFish = true) {
   if (!Array.isArray(m) || !m.length) return ['map is empty'];
   const out = [], w = m[0].length;
   m.forEach((row, y) => { if (row.length !== w) out.push('row ' + (y + 1) + ' is ' + row.length + ' long, should be ' + w); });
@@ -110,7 +120,7 @@ function checkLevel(m) {
     else if (!WALLS[ch] && !PROPS[ch] && !'.ahk'.includes(ch)) out.push("unknown letter '" + ch + "' at row " + (y + 1) + ', column ' + (x + 1));
   }));
   if (starts !== 1) out.push('needs exactly one S (found ' + starts + ')');
-  if (!fishAt.length) out.push('has no fish to feed');
+  if (needFish && !fishAt.length) out.push('has no fish to feed');
   for (const k of doorsOnMap) if (!keysOnMap.has(k)) out.push('has a ' + KEYS[k].name + ' door but no ' + KEYS[k].name + ' key');
   if (out.length) return out;
   // every fish has to be reachable from the start, or the level can't be won.
@@ -126,7 +136,7 @@ function checkLevel(m) {
       for (const [nx, ny] of [[x + 1, y], [x - 1, y], [x, y + 1], [x, y - 1]]) {
         const ch = (m[ny] || '')[nx];
         if (ch === undefined || seen.has(nx + ',' + ny) || (PROPS[ch] && PROPS[ch].solid)) continue;
-        if (WALLS[ch] && !(ch !== ch.toLowerCase() && have.has(ch.toLowerCase()))) continue;
+        if (WALLS[ch] && !WALLS[ch].auto && !(ch !== ch.toLowerCase() && have.has(ch.toLowerCase()))) continue;
         seen.add(nx + ',' + ny); q.push([nx, ny]);
       }
     }

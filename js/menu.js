@@ -18,6 +18,8 @@ function menuItems() {
   switch (state) {
     case 'menu': return [
       { label: 'PLAY', go: () => setScreen('worlds') },
+      { label: 'MAP TEST', bad: !LEVELS.test || LEVELS.test.problems.length > 0,
+        go: () => { if (LEVELS.test && !LEVELS.test.problems.length) startGame('test'); } },
       { label: 'EXTRAS', go: () => setScreen('extras') },
     ];
     case 'worlds': return [
@@ -42,6 +44,7 @@ function menuItems() {
     ];
     case 'paused': return [
       { label: 'RESUME', go: () => { state = 'play'; lock(); } },
+      { label: 'RESTART', go: () => startGame(currentLevel) },
       ...(inWorld ? [levelSelect] : []),
       { label: 'MAIN MENU', go: () => toMenu() },
     ];
@@ -57,7 +60,7 @@ function menuItems() {
   }
   return [];
 }
-const menuTop = () => ({ menu: 120, worlds: 90, levels: 70, extras: 78, paused: 110, win: 140 }[state] || 150);
+const menuTop = () => ({ menu: 120, worlds: 90, levels: 70, extras: 78, paused: 104, win: 140 }[state] || 150);
 function menuRect(i) { return { x: (W - BTN_W) / 2, y: menuTop() + i * (BTN_H + BTN_GAP), w: BTN_W, h: BTN_H }; }
 
 // Which button is under a mouse event (canvas is letterboxed by object-fit: contain)
@@ -85,8 +88,14 @@ function drawMenu() {
     ctx.drawImage(TEX.patty.cv, W / 2 + 132, 26, 40, 40);
     txt('KRABBY DOOM', W / 2, 60, 34, '#ffd84a');
     txt('The fish of Bikini Bottom are HUNGRY. Feed them all!', W / 2, 88, 11, '#e8f6ff');
-    txt('WASD / Arrows - move    Mouse or Q / E - turn    Shift - run', W / 2, 206, 10, '#bfe6ff');
-    txt('Click / Space - throw Krabby Patty    M - map    Esc - pause', W / 2, 221, 10, '#bfe6ff');
+    if (menuSel === 1) {
+      const t = LEVELS.test;
+      if (!t) txt('js/worlds/testmap.js is missing', W / 2, 212, 10, '#ff7a5a');
+      else if (t.problems.length) txt('Map problem: ' + t.problems[0], W / 2, 212, 10, '#ff7a5a');
+      else txt('Walk around js/worlds/testmap.js (refresh the page after saving it)', W / 2, 212, 10, '#7dff8a');
+    }
+    txt('WASD / Arrows - move    Mouse or Q / E - turn    Shift - run', W / 2, 232, 10, '#bfe6ff');
+    txt('Click / Space - throw Krabby Patty    M - map    Esc - pause', W / 2, 247, 10, '#bfe6ff');
   } else if (state === 'worlds') {
     txt('SELECT WORLD', W / 2, 50, 28, '#ffd84a');
     txt('More worlds coming soon!', W / 2, 72, 11, '#e8f6ff');

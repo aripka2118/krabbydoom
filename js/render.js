@@ -55,9 +55,10 @@ function renderWorld() {
       if (sdx < sdy) { sdx += ddx; mx += stx; side = 0; } else { sdy += ddy; my += sty; side = 1; }
       tex = WALLS[cell(mx, my)];
       if (!tex) continue;
-      if (tex.door && !door && doorO[my * MW + mx] > 0) {
-        door = { pd: side === 0 ? sdx - ddx : sdy - ddy, side, tex, o: doorO[my * MW + mx] };
-        tex = null; continue;
+      if (tex.door) {
+        const o = doorO[my * MW + mx];
+        if (o >= 1) { tex = null; continue; }   // wide open
+        if (o > 0 && !door) { door = { pd: side === 0 ? sdx - ddx : sdy - ddy, side, tex, o }; tex = null; continue; }
       }
       break;
     }

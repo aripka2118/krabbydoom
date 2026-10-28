@@ -117,6 +117,14 @@ function update(dt) {
   }
   opening = opening.filter(d => !d.done);
 
+  // auto doors: slide open while anyone is close, shut again once everyone has gone
+  for (const d of autoDoors) {
+    const near = e => Math.hypot(e.x - d.x - .5, e.y - d.y - .5) < 1.6;
+    const want = near(P) || fish.some(near) ? 1 : 0, i = d.y * MW + d.x;
+    if (want !== d.want) { d.want = want; if (Math.hypot(P.x - d.x - .5, P.y - d.y - .5) < 7) SFX.slide(); }
+    doorO[i] = want ? Math.min(1, doorO[i] + dt * 2.5) : Math.max(0, doorO[i] - dt * 2);
+  }
+
   meowT -= dt;
   for (const p of props) if (p.t.meow && meowT <= 0 && Math.hypot(p.x - P.x, p.y - P.y) < .8) { say('Gary: "Meow."', 1.5); SFX.meow(); meowT = 4; }
 
@@ -228,5 +236,5 @@ function update(dt) {
   fx = fx.filter(e => e.life > 0);
 
   if (P.hp <= 0) { P.hp = 0; setScreen('dead'); SFX.die(); document.exitPointerLock && document.exitPointerLock(); }
-  else if (fedCount === fish.length) { setScreen('win'); SFX.win(); document.exitPointerLock && document.exitPointerLock(); }
+  else if (fish.length && fedCount === fish.length) { setScreen('win'); SFX.win(); document.exitPointerLock && document.exitPointerLock(); }
 }

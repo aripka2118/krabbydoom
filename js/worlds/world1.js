@@ -10,13 +10,14 @@
 //   Walls:  #  coral          P  pineapple        W  wood            K  rock
 //   House:  L  blue planks    T  kitchen tiles    O  bedroom weave   G  bathroom wallpaper
 //           B  bookshelf      C  grey stone       N  porthole window D  front door (decoration)
-//   Doors:  R  red            Y  yellow           U  blue            (opened by their key)
+//   Doors:  +  opens by itself when anyone walks up, closes again after
+//           R  red            Y  yellow           U  blue            (opened by their key)
 //   Keys:   r  red            y  yellow           u  blue
 //   Fish:   n  anchovy        b  Bubble Bass      d  Fred
 //   Furniture (solid, blocks you, fish and patties):
-//           c  armchair       t  TV               z  bed             i  fridge
-//           e  table          l  barrel           x  treasure chest  w  bathtub
-//           o  toilet         g  Gary (not solid, meows when you walk up)
+//           c  armchair       s  couch            t  TV              z  bed
+//           i  fridge         e  table            l  barrel          x  treasure chest
+//           w  bathtub        o  toilet           g  Gary (not solid, meows when you walk up)
 //   Stuff:  S  start (exactly one)    a  patty crate    h  sea water    k  kelp
 //           .  open floor
 //
@@ -28,6 +29,7 @@
 //   Mistakes (uneven rows, no S, a fish walled off...) show up in red on the level select.
 //   Extras > House Test shows every house wall and piece of furniture.
 //   The full list is also in LEVEL_GUIDE.md.
+//   To try out a layout with no fish, use js/worlds/testmap.js (Main menu > MAP TEST).
 
 addWorld({
   name: 'Conch St',
@@ -63,24 +65,24 @@ addWorld({
     },
     // ---------------------------------------------------------------- Level 2
     {
-      name: 'Goo Lagoon',
-      facing: 'east',
+      name: 'Home Sweet Home',
+      facing: 'north',
       floor: 'sand',
-      ceiling: 'sky',
-      intro: 'Bubble Bass is here. He needs 5 patties!',
+      ceiling: 'net',
       map: [
-        '####################',
-        '#S.......W.........#',
-        '#........W...n.....#',
-        '#..a.....W.........#',
-        '#........W....b....#',
-        '#..n.....W.........#',
-        '#..................#',
-        '#WWWW.WWWW...h..n..#',
-        '#..........k.......#',
-        '#..n....b......a...#',
-        '#..................#',
-        '####################',
+        "###GGGGGGG##########",
+        "###Guw.onG##########",
+        "###G.....G##########",
+        "###G.....G##########",
+        "###Gdl...G##########",
+        "###LLLL+LLTTTTTTTTTT",
+        "#bUR.....+...l.nl..T",
+        "###L.....LC........T",
+        "###Lt...cLCi..b..erT",
+        "###Lh...sLC...n.d..T",
+        "###La...gLC........T",
+        "###La.S..LC..l.dl..T",
+        "###LLLDLLLCTTTTTTTTT",
       ],
     },
     // ---------------------------------------------------------------- Level 3

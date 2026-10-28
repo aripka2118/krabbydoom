@@ -17,9 +17,13 @@ function loadLevel(key) {
 }
 loadLevel(MENU_LEVEL);
 const cell = (x, y) => (x < 0 || y < 0 || x >= MW || y >= MH) ? '#' : MAP[y][x];
-const solid = (x, y) => !!WALLS[cell(Math.floor(x), Math.floor(y))];
-// a cell nothing can path through: wall, closed door or furniture
-const walkable = (x, y) => !WALLS[cell(x, y)] && !propGrid[y * MW + x];
+// an auto door ('+') stops blocking once it has slid most of the way open
+function solid(x, y) {
+  const cx = Math.floor(x), cy = Math.floor(y), t = WALLS[cell(cx, cy)];
+  return !!t && !(t.auto && doorO[cy * MW + cx] > .85);
+}
+// a cell fish can path through: open floor or an auto door (it opens as they walk up)
+const walkable = (x, y) => { const t = WALLS[cell(x, y)]; return (!t || t.auto) && !propGrid[y * MW + x]; };
 // is (x, y) within r of a solid piece of furniture? (r = 0 tests a single point, e.g. a patty)
 function propBlocked(x, y, r) {
   const cx = Math.floor(x), cy = Math.floor(y);

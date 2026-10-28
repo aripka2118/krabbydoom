@@ -68,13 +68,25 @@ function drawFace(x, y) {
   ctx.strokeStyle = '#8a7a10'; ctx.lineWidth = 1; ctx.strokeRect(x + .5, y + .5, s, s + 2);
 }
 
+// Average colour of a wall texture, worked out once, so any wall type shows on the map
+function mapCol(t) {
+  if (!t.mapCol) {
+    let r = 0, g = 0, b = 0;
+    for (const c of t.px) { r += c & 255; g += c >> 8 & 255; b += c >> 16 & 255; }
+    const n = t.px.length;
+    t.mapCol = `rgb(${r / n | 0},${g / n | 0},${b / n | 0})`;
+  }
+  return t.mapCol;
+}
+
 function drawMap() {
   const cs = 4, ox = W - MW * cs - 6, oy = 6;
   ctx.fillStyle = 'rgba(0,0,0,.55)'; ctx.fillRect(ox - 2, oy - 2, MW * cs + 4, MH * cs + 4);
   const col = { '#': '#b8577f', P: '#e9921f', W: '#8b5a2b', K: '#5d7186' };
   for (const [k, c] of Object.entries(KEYS)) col[k.toUpperCase()] = c.col;
+  col['+'] = '#d8b050';
   for (let y = 0; y < MH; y++) for (let x = 0; x < MW; x++) {
-    const c = col[MAP[y][x]];
+    const ch = MAP[y][x], c = col[ch] || (WALLS[ch] && mapCol(WALLS[ch]));
     if (c) { ctx.fillStyle = c; ctx.fillRect(ox + x * cs, oy + y * cs, cs, cs); }
   }
   ctx.fillStyle = '#c8b090';
@@ -115,8 +127,10 @@ function drawHUD() {
       ctx.globalAlpha = 1;
     });
   }
-  txt('FISH FED', W - 10, H - 20, 9, '#ffd84a', 'right');
-  txt(fedCount + ' / ' + fish.length, W - 10, H - 6, 14, '#fff', 'right');
+  if (fish.length) {
+    txt('FISH FED', W - 10, H - 20, 9, '#ffd84a', 'right');
+    txt(fedCount + ' / ' + fish.length, W - 10, H - 6, 14, '#fff', 'right');
+  } else txt('MAP TEST', W - 10, H - 12, 12, '#7dff8a', 'right');
   if (msgT > 0) txt(message, W / 2, 22, 12, '#fff6b0');
   if (showMap) drawMap();
   if (!locked()) txt('Click to capture mouse  (or use arrows / Q E to turn)', W / 2, H - 42, 9, 'rgba(255,255,255,.8)');

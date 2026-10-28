@@ -26,10 +26,10 @@ TEX.planksBlue = canvasTex(TS, TS, g => {
   for (let i = 0; i < 3; i++) oval(g, 4 + rnd() * 56, 8 + rnd() * 48, 1.5, 3, '#245f7a');
 });
 TEX.tile = canvasTex(TS, TS, g => {
-  g.fillStyle = '#7f9fb4'; g.fillRect(0, 0, TS, TS);
+  g.fillStyle = '#86ad2e'; g.fillRect(0, 0, TS, TS);
   for (let r = 0; r < 4; r++) for (let c = -1; c < 2; c++) {
     const x = c * 32 + (r % 2) * 16, y = r * 16;
-    g.fillStyle = ['#c3dcea', '#b2cfe0'][(r + c + 2) % 2];
+    g.fillStyle = ['#d8f57a', '#c6ee58'][(r + c + 2) % 2];
     rrect(g, x + 1, y + 1, 30, 14, 4); g.fill();
     g.fillStyle = 'rgba(255,255,255,.35)'; g.fillRect(x + 5, y + 3, 12, 2);
   }
@@ -72,17 +72,17 @@ TEX.books = canvasTex(TS, TS, g => {
   g.fillStyle = '#6b4424'; g.fillRect(0, 0, 3, TS); g.fillRect(61, 0, 3, TS);
 });
 TEX.stone = canvasTex(TS, TS, g => {
-  g.fillStyle = '#5c666f'; g.fillRect(0, 0, TS, TS);
+  g.fillStyle = '#9aa3aa'; g.fillRect(0, 0, TS, TS);
   for (let r = 0; r < 4; r++) {
     let x = r % 2 ? -14 : 0;
     while (x < 64) {
       const w = 18 + rnd() * 14;
-      g.fillStyle = ['#8d98a2', '#9aa5ae', '#848f99'][rnd() * 3 | 0];
+      g.fillStyle = ['#c4cbd0', '#cfd5d9', '#bac2c8'][rnd() * 3 | 0];
       rrect(g, x + 1, r * 16 + 1, w - 2, 14, 3); g.fill();
       x += w;
     }
   }
-  dots(g, 30, ['#7a858f', '#a8b2ba'], .5, 1.2);
+  dots(g, 30, ['#aab3ba', '#dfe4e7'], .5, 1.2);
 });
 TEX.porthole = canvasTex(TS, TS, g => {
   g.drawImage(TEX.planksBlue.cv, 0, 0);
@@ -247,4 +247,22 @@ const PROPS = {
     for (const [x, y] of [[6, 9], [14, 8]]) { oval(g, x, y, 4, 4, '#f4ee9a', '#c04040'); oval(g, x, y, 1.3, 1.3, '#111'); }
   }, false),
 };
+// SpongeBob's living room couch: a long green rolled-up cushion on a blue base
+PROPS.s = prop('Couch', 128, 56, .55, .48, g => {
+  g.fillStyle = '#183a78'; g.fillRect(14, 48, 6, 7); g.fillRect(108, 48, 6, 7);
+  g.lineWidth = 2;
+  rrect(g, 3, 31, 122, 20, 6); g.fillStyle = '#2f6fd0'; g.fill(); g.strokeStyle = '#183a78'; g.stroke();
+  g.fillStyle = '#4a8ae8'; g.fillRect(8, 33, 112, 4);
+  g.fillStyle = '#245cb0'; for (const x of [44, 84]) g.fillRect(x, 33, 2, 16);
+  rrect(g, 8, 6, 112, 30, 15); g.fillStyle = '#4fbf4a'; g.fill(); g.strokeStyle = '#23702a'; g.stroke();
+  g.fillStyle = '#78d86a'; g.fillRect(20, 11, 88, 4);
+  g.fillStyle = '#3a9a3a'; g.fillRect(20, 26, 88, 3);
+  g.fillStyle = 'rgba(35,112,42,.5)'; for (const x of [40, 64, 88]) g.fillRect(x, 8, 2, 26);
+  for (const x of [20, 108]) {
+    oval(g, x, 21, 11, 14, '#5fcf58', '#23702a');
+    g.strokeStyle = '#2f8a32'; g.lineWidth = 1.5; g.beginPath();
+    for (let a = 0; a < 3 * Math.PI; a += .25) { const r = 9 - a * .9; g.lineTo(x + Math.cos(a) * r * .8, 21 + Math.sin(a) * r); }
+    g.stroke();
+  }
+});
 PROPS.g.meow = true;

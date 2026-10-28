@@ -473,3 +473,23 @@ function doorTex(c) {
   return t;
 }
 for (const [k, c] of Object.entries(KEYS)) { c.tex = keyTex(c); WALLS[k.toUpperCase()] = doorTex(c); }
+
+// Plain door ('+' on the map): slides open on its own when anyone comes near
+TEX.autoDoor = canvasTex(TS, TS, g => {
+  g.fillStyle = '#3a3f48'; g.fillRect(0, 0, TS, TS);
+  const cols = ['#a8692f', '#9a5f2a', '#b07234', '#a0642c'];
+  for (let p = 0; p < 4; p++) {
+    g.fillStyle = cols[p]; g.fillRect(6 + p * 13, 4, 13, 60);
+    g.fillStyle = 'rgba(60,30,8,.6)'; g.fillRect(6 + p * 13, 4, 1, 60);
+  }
+  g.fillStyle = '#c8a040'; g.fillRect(6, 4, 52, 4); g.fillRect(6, 44, 52, 4);
+  g.fillStyle = '#7a5a10'; g.fillRect(6, 8, 52, 1); g.fillRect(6, 48, 52, 1);
+  g.fillStyle = '#7a5a10'; g.beginPath(); g.arc(32, 25, 10, 0, 7); g.fill();
+  g.fillStyle = '#d8b050'; g.beginPath(); g.arc(32, 25, 8.5, 0, 7); g.fill();
+  g.fillStyle = '#8fe0ff'; g.beginPath(); g.arc(32, 25, 6.5, 0, 7); g.fill();
+  g.fillStyle = 'rgba(255,255,255,.7)'; g.fillRect(28, 21, 3, 2);
+  g.fillStyle = '#9aa3ad';
+  for (const [x, y] of [[3, 4], [60, 4], [3, 32], [60, 32], [3, 60], [60, 60]]) g.fillRect(x - 1, y - 1, 2, 2);
+});
+TEX.autoDoor.door = TEX.autoDoor.auto = true;
+WALLS['+'] = TEX.autoDoor;
